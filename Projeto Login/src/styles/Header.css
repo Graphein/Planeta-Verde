@@ -1,0 +1,68 @@
+/* Header.css */
+
+/* Cabeçalho */
+header {
+  display: flex;
+  flex-direction: column; /* Empilhar os elementos verticalmente */
+  align-items: center; /* Centralizar horizontalmente */
+  padding: 20px;
+  background-color: #28a745; /* Verde Planeta Verde */
+  color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 0;
+}
+
+header img {
+  height: 40px;
+  display: block;
+  margin: 0 auto;
+}
+
+#logo-ong {
+  width: 250px;
+  height: auto;
+  margin-bottom: 10px; /* Espaçamento entre o logo e o texto abaixo */
+}
+
+.usuario-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px; /* Espaçamento entre o logo e o texto */
+}
+
+.usuario-info span {
+  font-size: 16px;
+}
+
+.botao-sair {
+  padding: 5px 10px;
+  background-color: #dc3545;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.botao-sair:hover {
+  background-color: #c82333;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  header {
+    padding: 15px;
+  }
+
+  #logo-ong {
+    width: 200px; /* Reduzir o tamanho do logo em telas menores */
+  }
+
+  .usuario-info {
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 5px;
+  }
+}
