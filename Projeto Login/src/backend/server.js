@@ -273,7 +273,7 @@ app.post("/doacoes/receber", autenticar, autorizar(["admin", "gerente", "volunta
 
   const query =
     "INSERT INTO receber_doacao (data_recebimento, doador_id, tipo_doacao, quantidade, observacoes, responsavel_id) VALUES (NOW(), ?, ?, ?, ?, ?)";
-  executeQuery(query, [doador, tipo_doacao, quantidade, observacoes, req.user.id], res, "insert");
+  executeQuery(query, [doador, tipo_doacao, quantidade, observacoes, req.user.id], res, "insert", "receber_doacao");
 });
 
 // Atualizar Doação Agendada (apenas admin e gerente)
@@ -814,38 +814,149 @@ app.delete("/despesas/:id", autenticar, autorizar(["admin"]), (req, res) => {
 });
 
 // ---------------- FINAL ROTAS DE DESPESAS ----------------
-
 // ----------------  ROTAS DASHBORD ----------------
 
 app.get("/dashboard", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
-  const queries = {
-    agendar_doacao: "SELECT COUNT(*) AS total FROM agendar_doacao",
-    receber_doacao: "SELECT COUNT(*) AS total FROM receber_doacao",
-    pedidos: "SELECT COUNT(*) AS total FROM pedidos",
-    pedidos_pendentes: "SELECT COUNT(*) AS total FROM pedidos WHERE status = 'Pendente'",
-    estoque: "SELECT COUNT(*) AS total FROM estoque",
-    iniciar_projeto: "SELECT COUNT(*) AS total FROM iniciar_projeto",
-    concluir_projeto: "SELECT COUNT(*) AS total FROM concluir_projeto",
-    iniciar_atividade: "SELECT COUNT(*) AS total FROM iniciar_atividade",
-    concluir_atividade: "SELECT COUNT(*) AS total FROM concluir_atividade",
-    despesas: "SELECT COUNT(*) AS total FROM despesas",
-    caixa: "SELECT COUNT(*) AS total FROM caixa"
+  const { periodo } = req.query; // Ex.: ultimo_mes, ultimo_trimestre, ultimo_ano
+  const result = {
+    kpis: {},
+    graficos: {
+      doacoes_mensais: [],
+      despesas_por_categoria: [],
+    },
+    atividades_recentes: [],
   };
 
-  const result = {};
-  let completed = 0;
-  const totalQueries = Object.keys(queries).length;
+  // Definir intervalo de tempo com base no período
+  const getFiltroPorCampo = (campoData) => {
+    if (periodo === "ultimo_mes") {
+      return `AND DATE(${campoData}) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)`;
+    } else if (periodo === "ultimo_trimestre") {
+      return `AND DATE(${campoData}) >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)`;
+    } else if (periodo === "ultimo_ano") {
+      return `AND DATE(${campoData}) >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)`;
+    }
+    return ""; // sem filtro
+  };
 
+  // KPIs (contagens)
+  const queries = {
+    agendar_doacao: `SELECT COUNT(*) AS total FROM agendar_doacao WHERE 1=1 ${getFiltroPorCampo('data_agendamento')}`,
+    receber_doacao: `SELECT COUNT(*) AS total FROM receber_doacao WHERE 1=1 ${getFiltroPorCampo('data_recebimento')}`,
+    pedidos: `SELECT COUNT(*) AS total FROM pedidos WHERE 1=1 ${getFiltroPorCampo('data')}`,
+    pedidos_pendentes: `SELECT COUNT(*) AS total FROM pedidos WHERE status = 'Pendente' ${getFiltroPorCampo('data')}`,
+    estoque: `SELECT COUNT(*) AS total FROM estoque WHERE 1=1 ${getFiltroPorCampo('data_registro')}`,
+    iniciar_projeto: `SELECT COUNT(*) AS total FROM iniciar_projeto WHERE 1=1 ${getFiltroPorCampo('data_inicio')}`,
+    concluir_projeto: `SELECT COUNT(*) AS total FROM concluir_projeto WHERE 1=1 ${getFiltroPorCampo('data_conclusao')}`,
+    iniciar_atividade: `SELECT COUNT(*) AS total FROM iniciar_atividade WHERE 1=1 ${getFiltroPorCampo('data_inicio')}`,
+    concluir_atividade: `SELECT COUNT(*) AS total FROM concluir_atividade WHERE 1=1 ${getFiltroPorCampo('data_conclusao')}`,
+    despesas: `SELECT COUNT(*) AS total FROM despesas WHERE 1=1 ${getFiltroPorCampo('data')}`,
+    caixa: `SELECT COUNT(*) AS total FROM caixa WHERE 1=1 ${getFiltroPorCampo('data')}`,
+  };
+  
+
+  // Gráficos
+  const graficoQueries = {
+    doacoes_mensais: `
+      SELECT DATE_FORMAT(data_recebimento, '%Y-%m') AS mes, COUNT(*) AS total
+      FROM receber_doacao
+      WHERE 1=1 ${getFiltroPorCampo('data_recebimento')}
+      GROUP BY DATE_FORMAT(data_recebimento, '%Y-%m')
+      ORDER BY mes
+    `,
+    despesas_por_categoria: `
+      SELECT categoria, SUM(valor) AS total
+      FROM despesas
+      WHERE 1=1 ${getFiltroPorCampo('data')}
+      GROUP BY categoria
+    `
+  };
+
+  // Atividades recentes (últimas 5 movimentações)
+  const atividadesRecentesQuery = `
+    (
+      SELECT 'Doação Recebida' AS tipo, data_recebimento AS data, 
+            CONCAT('Doação: ', tipo_doacao, ' (Qtd: ', quantidade, ')') AS descricao
+      FROM receber_doacao
+      WHERE 1=1 ${getFiltroPorCampo('data_recebimento')}
+    )
+    UNION
+    (
+      SELECT 'Projeto Iniciado' AS tipo, data_inicio AS data, 
+            CONCAT('Projeto: ', nome_projeto) AS descricao
+      FROM iniciar_projeto
+      WHERE 1=1 ${getFiltroPorCampo('data_inicio')}
+    )
+    UNION
+    (
+      SELECT 'Projeto Concluído' AS tipo, data_conclusao AS data, 
+            CONCAT('Projeto: ', nome_projeto) AS descricao
+      FROM concluir_projeto
+      WHERE 1=1 ${getFiltroPorCampo('data_conclusao')}
+    )
+    UNION
+    (
+      SELECT 'Despesa' AS tipo, data, 
+            CONCAT('Despesa: ', categoria, ' (R$ ', valor, ')') AS descricao
+      FROM despesas
+      WHERE 1=1 ${getFiltroPorCampo('data')}
+    )
+    ORDER BY data DESC
+    LIMIT 5
+  `;
+  let completed = 0;
+  const totalQueries = Object.keys(queries).length + Object.keys(graficoQueries).length + 1; // +1 = atividades recentes
+  let respondeu = false;
+  
+  const tentarResponder = () => {
+    if (!respondeu && completed === totalQueries) {
+      respondeu = true;
+      res.json(result);
+    }
+  };
+  
+  // Executar queries de KPIs
   for (const [key, sql] of Object.entries(queries)) {
     db.query(sql, (err, rows) => {
-      if (err) return res.status(500).json({ error: `Erro ao buscar ${key}` });
-      result[key] = rows[0].total;
-      completed++;
-      if (completed === totalQueries) {
-        res.json(result);
+      if (err) {
+        if (!respondeu) {
+          respondeu = true;
+          return res.status(500).json({ error: `Erro ao buscar ${key}` });
+        }
       }
+      result.kpis[key] = rows[0]?.total ?? 0;
+      completed++;
+      tentarResponder();
     });
   }
+  
+  // Executar queries de gráficos
+  for (const [key, sql] of Object.entries(graficoQueries)) {
+    db.query(sql, (err, rows) => {
+      if (err) {
+        if (!respondeu) {
+          respondeu = true;
+          return res.status(500).json({ error: `Erro ao buscar ${key}` });
+        }
+      }
+      result.graficos[key] = rows;
+      completed++;
+      tentarResponder();
+    });
+  }
+  
+  // Executar query de atividades recentes
+  db.query(atividadesRecentesQuery, (err, rows) => {
+    if (err) {
+      if (!respondeu) {
+        respondeu = true;
+        return res.status(500).json({ error: "Erro ao buscar atividades recentes" });
+      }
+    }
+    result.atividades_recentes = rows;
+    completed++;
+    tentarResponder();
+  });
 });
 
 // Rota para listar voluntários (apenas admin e gerente)

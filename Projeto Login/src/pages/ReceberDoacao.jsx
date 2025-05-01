@@ -59,33 +59,42 @@ function ReceberDoacao() {
 
   const enviarFormulario = async (evento) => {
     evento.preventDefault();
-
+  
     const dadosFiltrados = {
       doador: formData.doador,
       tipo_doacao: formData.tipo_doacao,
       quantidade: formData.quantidade,
       observacoes: formData.observacoes,
     };
-
+  
     try {
       const metodo = editando ? "PUT" : "POST";
       const url = editando ? `/doacoes/receber/${editando.id}` : "/doacoes/receber";
-
+  
       const response = await fetch(url, {
         method: metodo,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(dadosFiltrados),
+        body: JSON.stringify({
+          ...dadosFiltrados,
+          tabela: "receber_doacao", // ✅ necessário para o backend saber a tabela
+        }),
       });
-
+  
       if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || "Erro ao enviar os dados");
+        // 🛡️ Protege contra resposta sem JSON
+        let mensagemErro = "Erro ao enviar os dados";
+        try {
+          const errData = await response.json();
+          mensagemErro = errData.error || mensagemErro;
+        } catch (_) {}
+        throw new Error(mensagemErro);
       }
-
-      toast.success(editando ? "Atualizado com sucesso!" : "Cadastrado com sucesso!"); // ✅ TOAST
+  
+      // ✅ Sucesso
+      toast.success(editando ? "Atualizado com sucesso!" : "Cadastrado com sucesso!");
       setEditando(null);
       setFormData({
         doador: "",
@@ -97,10 +106,10 @@ function ReceberDoacao() {
     } catch (error) {
       setError(error.message);
       console.error("Erro ao enviar o formulário:", error);
-      toast.error("Erro ao enviar os dados!"); // ✅ TOAST
+      toast.error("Erro ao enviar os dados!");
     }
   };
-
+  
   const handleDelete = async (id) => {
     try {
       const response = await fetch(`/doacoes/receber/${id}`, {
@@ -160,6 +169,13 @@ function ReceberDoacao() {
             required
           />
           <input
+            type="datetime-local"
+            name="data"
+            value={formData.data}
+            onChange={handleInputChange}
+            required
+          />
+          <input
             type="text"
             name="tipo_doacao"
             placeholder="Tipo de Doação"
@@ -202,7 +218,14 @@ function ReceberDoacao() {
               {recebidas.map((doacao) => (
                 <tr key={doacao.id}>
                   <td>{doacao.doador_id}</td>
-                  <td>{new Date(doacao.data_recebimento).toLocaleString("pt-BR")}</td>
+                  <td>{new Date(doacao.data_recebimento).toLocaleString("pt-BR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit"
+                  })}</td>
                   <td>{doacao.tipo_doacao}</td>
                   <td>{doacao.quantidade}</td>
                   <td>{doacao.observacoes || "-"}</td>
