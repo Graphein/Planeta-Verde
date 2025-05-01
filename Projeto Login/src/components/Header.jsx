@@ -1,16 +1,15 @@
-// Header.jsx
 import React from "react";
-import logo from "../assets/logo-ong.png"; // Ajuste o caminho conforme necessário
-import "../styles/Header.css"; // Importe o novo CSS
+import { LogOut } from "lucide-react";
+import "../styles/Header.css";
 
 function Header({ usuario, onLogout }) {
   return (
     <header>
-      <img src={logo} alt="Logo Planeta Verde" id="logo-ong" />
       {usuario && (
         <div className="usuario-info">
           <span>Olá, {usuario.nome}!</span>
           <button className="botao-sair" onClick={onLogout}>
+            <LogOut size={20} />
             Sair
           </button>
         </div>

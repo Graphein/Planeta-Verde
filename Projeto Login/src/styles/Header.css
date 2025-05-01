@@ -3,66 +3,55 @@
 /* Cabeçalho */
 header {
   display: flex;
-  flex-direction: column; /* Empilhar os elementos verticalmente */
-  align-items: center; /* Centralizar horizontalmente */
+  flex-direction: row;
+  justify-content: flex-end; /* Alinha o conteúdo (usuario-info) à direita */
+  align-items: center; /* Centraliza verticalmente */
   padding: 20px;
-  background-color: #28a745; /* Verde Planeta Verde */
+  background-color: #16A34A; /* Verde Planeta Verde */
   color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   margin: 0;
-}
-
-header img {
-  height: 40px;
-  display: block;
-  margin: 0 auto;
-}
-
-#logo-ong {
-  width: 250px;
-  height: auto;
-  margin-bottom: 10px; /* Espaçamento entre o logo e o texto abaixo */
+  width: 100%; /* Garante que o header ocupe toda a largura */
+  box-sizing: border-box;
 }
 
 .usuario-info {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 10px; /* Espaçamento entre o logo e o texto */
+  gap: 10px; /* Espaço entre o texto e o botão */
 }
 
 .usuario-info span {
-  font-size: 16px;
+  font-size: 20px;
 }
 
 .botao-sair {
-  padding: 5px 10px;
-  background-color: #dc3545;
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Espaço entre o ícone e o texto */
+  padding: 8px 16px;
+  background-color: #EAB308; /* Cor de fundo */
   color: white;
-  font-size: 16px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s;
 }
 
 .botao-sair:hover {
-  background-color: #c82333;
+  background-color: #EAB308; /* Cor ao passar o mouse */
 }
 
 /* Responsividade */
 @media (max-width: 768px) {
   header {
     padding: 15px;
-  }
-
-  #logo-ong {
-    width: 200px; /* Reduzir o tamanho do logo em telas menores */
+    justify-content: flex-end; /* Mantém o alinhamento à direita em telas menores */
   }
 
   .usuario-info {
-    flex-direction: column;
+    flex-direction: row; /* Mantém texto e botão em linha */
     gap: 5px;
-    margin-top: 5px;
+    width: 100%; /* Ocupa toda a largura para alinhamento à direita */
+    justify-content: flex-end; /* Garante alinhamento à direita */
   }
 }

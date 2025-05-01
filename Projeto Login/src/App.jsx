@@ -13,6 +13,15 @@ import UnauthorizedPage from "./pages/UnauthorizedPage";
 import RecuperarSenha from "./pages/RecuperarSenha";
 import RedefinirSenha from "./pages/RedefinirSenha";
 import TrocarSenha from "./pages/TrocarSenha";
+import IniciarProjeto from "./pages/IniciarProjeto";
+import ConcluirProjeto from "./pages/ConcluirProjeto";
+import AtualizarEstoque from "./pages/AtualizarEstoque"; 
+import AtualizarCaixa from "./pages/AtualizarCaixa";
+import RealizarPedido from "./pages/RealizarPedido";
+import AprovarPedido from "./pages/AprovarPedido";
+import RegistrarDespesas from "./pages/RegistrarDespesas";
+import Dashboard from "./pages/Dashboard";
+
 import "./styles/LoginPage.css";
 
 function App() {
@@ -36,6 +45,62 @@ function App() {
             }
           />
           <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/iniciar-projeto"
+            element={
+              <ProtectedRoute>
+                <IniciarProjeto />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/aprovar-pedido"
+            element={
+              <ProtectedRoute>
+                <AprovarPedido />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/registrar-despesas"
+            element={
+              <ProtectedRoute>
+                <RegistrarDespesas />
+              </ProtectedRoute>
+              }
+            />
+          <Route
+            path="/realizar-pedido"
+            element={
+              <ProtectedRoute>
+                <RealizarPedido />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/concluir-projeto"
+            element={
+              <ProtectedRoute>
+                <ConcluirProjeto />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/atualizar-estoque"
+            element={
+              <ProtectedRoute>
+                <AtualizarEstoque />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/agendar-doacao"
             element={
               <ProtectedRoute>
@@ -43,6 +108,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+              path="/atualizar-caixa"
+              element={
+                <ProtectedRoute>
+                  <AtualizarCaixa />
+                </ProtectedRoute>
+              }
+            />
           <Route
             path="/receber-doacao"
             element={

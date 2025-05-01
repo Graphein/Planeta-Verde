@@ -1,6 +1,7 @@
 // src/pages/RecuperarSenha.jsx
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import Footer from "../components/Footer";
 import "../styles/LoginPage.css";
 
 const RecuperarSenha = () => {
@@ -41,11 +42,10 @@ const RecuperarSenha = () => {
       <header>
         <img src="logo-ong.png" alt="Logo da ONG" id="logo-ong" />
       </header>
-      <div className="login-form">
-        <h1>Recuperar Senha</h1>
         {mensagem && <p className="mensagem">{mensagem}</p>}
         {erro && <p className="erro">{erro}</p>}
-        <form onSubmit={handleSubmit}>
+        <form className= "login-form"onSubmit={handleSubmit}>
+          <h1>Recuperar Senha</h1>
           <div className="input-group">
             <label htmlFor="email">Email</label>
             <input
@@ -65,7 +65,7 @@ const RecuperarSenha = () => {
         <div className="recuperar-senha">
           <Link to="/">Voltar ao Login</Link>
         </div>
-      </div>
+        <Footer />
     </div>
   );
 };

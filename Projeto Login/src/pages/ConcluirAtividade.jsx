@@ -4,6 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import Header from "../components/Header";
 import Menu from "../components/Menu";
 import Footer from "../components/Footer";
+import toast, { Toaster } from "react-hot-toast"; // 🔥 Importação do Toast
 import "../styles/LoginPage.css";
 
 function ConcluirAtividade() {
@@ -39,6 +40,7 @@ function ConcluirAtividade() {
     } catch (error) {
       setError(error.message);
       console.error("Erro ao buscar os dados:", error);
+      toast.error("Erro ao buscar os dados!"); // Exemplo de Toast de erro
     }
   };
 
@@ -87,7 +89,7 @@ function ConcluirAtividade() {
         throw new Error(errData.error || "Erro ao enviar os dados");
       }
 
-      alert(editando ? "Atualizado com sucesso!" : "Cadastrado com sucesso!");
+      toast.success(editando ? "Atualizado com sucesso!" : "Cadastrado com sucesso!"); // ✅ TOAST de sucesso
       setEditando(null);
       setFormData({
         data: "",
@@ -100,7 +102,7 @@ function ConcluirAtividade() {
     } catch (error) {
       setError(error.message);
       console.error("Erro ao enviar o formulário:", error);
-      alert("Erro ao enviar os dados!");
+      toast.error("Erro ao enviar os dados!"); // ✅ TOAST de erro
     }
   };
 
@@ -118,11 +120,11 @@ function ConcluirAtividade() {
         throw new Error(errData.error || "Erro ao excluir o registro");
       }
       setConcluidas((prev) => prev.filter((item) => item.id !== id));
-      alert("Registro excluído com sucesso!");
+      toast.success("Registro excluído com sucesso!"); // ✅ TOAST de sucesso
     } catch (error) {
       setError(error.message);
       console.error("Erro ao excluir registro:", error);
-      alert("Erro ao excluir o registro!");
+      toast.error("Erro ao excluir o registro!"); // ✅ TOAST de erro
     }
   };
 
@@ -136,12 +138,20 @@ function ConcluirAtividade() {
       feedback: registro.feedback || "",
     });
   };
+  
+  const { usuario, logout } = useContext(AuthContext);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <div className="page-container">
-      <Header />
-      <Menu />
+      <Header usuario={usuario} onLogout={handleLogout} />
+      <Menu onLogout={handleLogout} />
       <div className="container">
+        <Toaster position="top-center" /> {/* Exibe os Toasts */}
         <h1>Concluir Atividade</h1>
         {error && <p className="erro">{error}</p>}
 
@@ -154,17 +164,17 @@ function ConcluirAtividade() {
             required
           />
           <input
-            type="number"
+            type="text"
             name="atividade"
-            placeholder="ID da Atividade"
+            placeholder="Atividade"
             value={formData.atividade}
             onChange={handleInputChange}
             required
           />
           <input
-            type="number"
+            type="text"
             name="responsavel"
-            placeholder="ID do Responsável"
+            placeholder="Responsável"
             value={formData.responsavel}
             onChange={handleInputChange}
             required
@@ -192,7 +202,6 @@ function ConcluirAtividade() {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Data</th>
                 <th>Atividade</th>
                 <th>Responsável</th>
@@ -204,7 +213,6 @@ function ConcluirAtividade() {
             <tbody>
               {concluidas.map((atividade) => (
                 <tr key={atividade.id}>
-                  <td>{atividade.id}</td>
                   <td>{new Date(atividade.data_conclusao).toLocaleString("pt-BR")}</td>
                   <td>{atividade.atividade_id}</td>
                   <td>{atividade.responsavel_id}</td>

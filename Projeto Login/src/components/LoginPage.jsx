@@ -2,7 +2,8 @@
 import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom"; // Importar o Link
 import { AuthContext } from "../context/AuthContext";
-import "../styles/LoginPage.css";
+import Footer from "../components/Footer";
+import "../styles/Page.css";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -37,11 +38,10 @@ const LoginPage = () => {
       <header>
         <img src="logo-ong.png" alt="Logo da ONG" id="logo-ong" />
       </header>
-      <div className="login-form">
-        <h1>Bem-vindo</h1>
         {erro && <p className="erro">{erro}</p>}
-        <form onSubmit={handleSubmit}>
+        <form className="login-form" onSubmit={handleSubmit}>
           <div className="input-group">
+            <h1 className="BemVindo">Bem-vindo</h1>
             <label htmlFor="email">Email</label>
             <input
               type="email"
@@ -64,14 +64,14 @@ const LoginPage = () => {
             />
           </div>
           <button type="submit">Entrar</button>
-        </form>
-        {/* Adicionar o link para recuperar senha */}
         <div className="recuperar-senha">
           <Link to="/recuperar-senha">Esqueceu sua senha?</Link>
         </div>
-      </div>
+        </form>
+      <Footer />
     </div>
   );
+  
 };
 
 export default LoginPage;

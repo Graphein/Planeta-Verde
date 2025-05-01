@@ -4,6 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import Header from "../components/Header";
 import Menu from "../components/Menu";
 import Footer from "../components/Footer";
+import toast, { Toaster } from "react-hot-toast"; // 🔥 Toast importado
 import "../styles/LoginPage.css";
 
 function ReceberDoacao() {
@@ -38,6 +39,7 @@ function ReceberDoacao() {
     } catch (error) {
       setError(error.message);
       console.error("Erro ao buscar os dados:", error);
+      toast.error("Erro ao buscar os dados!");  // Exibir erro com toast
     }
   };
 
@@ -67,9 +69,7 @@ function ReceberDoacao() {
 
     try {
       const metodo = editando ? "PUT" : "POST";
-      const url = editando
-      ? `/doacoes/receber/${editando.id}`
-      : "/doacoes/receber";
+      const url = editando ? `/doacoes/receber/${editando.id}` : "/doacoes/receber";
 
       const response = await fetch(url, {
         method: metodo,
@@ -85,7 +85,7 @@ function ReceberDoacao() {
         throw new Error(errData.error || "Erro ao enviar os dados");
       }
 
-      alert(editando ? "Atualizado com sucesso!" : "Cadastrado com sucesso!");
+      toast.success(editando ? "Atualizado com sucesso!" : "Cadastrado com sucesso!"); // ✅ TOAST
       setEditando(null);
       setFormData({
         doador: "",
@@ -97,7 +97,7 @@ function ReceberDoacao() {
     } catch (error) {
       setError(error.message);
       console.error("Erro ao enviar o formulário:", error);
-      alert("Erro ao enviar os dados!");
+      toast.error("Erro ao enviar os dados!"); // ✅ TOAST
     }
   };
 
@@ -115,11 +115,11 @@ function ReceberDoacao() {
         throw new Error(errData.error || "Erro ao excluir o registro");
       }
       setRecebidas((prev) => prev.filter((item) => item.id !== id));
-      alert("Registro excluído com sucesso!");
+      toast.success("Registro excluído com sucesso!");  // ✅ TOAST
     } catch (error) {
       setError(error.message);
       console.error("Erro ao excluir registro:", error);
-      alert("Erro ao excluir o registro!");
+      toast.error("Erro ao excluir o registro!");  // ✅ TOAST
     }
   };
 
@@ -131,21 +131,30 @@ function ReceberDoacao() {
       quantidade: registro.quantidade,
       observacoes: registro.observacoes || "",
     });
+    toast.info("Editando registro...");  // ✅ TOAST de Informação
+  };
+
+  const { usuario, logout } = useContext(AuthContext);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
   };
 
   return (
     <div className="page-container">
-      <Header />
-      <Menu />
+      <Header usuario={usuario} onLogout={handleLogout} />
+      <Menu onLogout={handleLogout} />
       <div className="container">
+        <Toaster position="top-center" /> {/* Toast container */}
         <h1>Receber Doação</h1>
         {error && <p className="erro">{error}</p>}
 
         <form onSubmit={enviarFormulario}>
           <input
-            type="number"
+            type="text"
             name="doador"
-            placeholder="ID do Doador"
+            placeholder="Responsável Coleta"
             value={formData.doador}
             onChange={handleInputChange}
             required
@@ -181,12 +190,10 @@ function ReceberDoacao() {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
+                <th>Responsável</th>
                 <th>Data</th>
-                <th>Doador</th>
                 <th>Tipo</th>
                 <th>Quantidade</th>
-                <th>Responsável</th>
                 <th>Observações</th>
                 <th>Ações</th>
               </tr>
@@ -194,12 +201,10 @@ function ReceberDoacao() {
             <tbody>
               {recebidas.map((doacao) => (
                 <tr key={doacao.id}>
-                  <td>{doacao.id}</td>
-                  <td>{new Date(doacao.data_recebimento).toLocaleString("pt-BR")}</td>
                   <td>{doacao.doador_id}</td>
+                  <td>{new Date(doacao.data_recebimento).toLocaleString("pt-BR")}</td>
                   <td>{doacao.tipo_doacao}</td>
                   <td>{doacao.quantidade}</td>
-                  <td>{doacao.responsavel_id}</td>
                   <td>{doacao.observacoes || "-"}</td>
                   <td>
                     <button className="editar" onClick={() => handleEdit(doacao)}>
@@ -220,7 +225,7 @@ function ReceberDoacao() {
           <p>Nenhuma doação recebida encontrada.</p>
         )}
       </div>
-      <Footer /> {/* Adicione o Footer */}
+      <Footer />
     </div>
   );
 }

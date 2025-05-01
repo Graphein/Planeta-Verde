@@ -1,0 +1,128 @@
+/* Container principal */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f7f8fc;
+  align-items: center;
+}
+
+/* Cabeçalho */
+header img {
+  height: 40px;
+  display: block;
+  margin: 0 auto;
+}
+
+#logo-ong {
+  width: 250px;
+  height: auto;
+  margin-bottom: 10px; /* Espaçamento entre o logo e o texto abaixo */
+}
+
+/* Formulário */
+.login-form {
+  background-color: #ffffff; /* branco */
+  margin-top: 120px;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* sombra leve */
+  width: 100%;
+  max-width: 500px;
+  border: none; 
+}
+
+/* Título Bem-vindo */
+.BemVindo {
+  text-align: center;
+  font-size: 35px;
+  color: #2d3748;
+  margin-bottom: 24px;
+}
+
+/* Mensagem de erro */
+.erro {
+  background-color: #ffe0e0;
+  color: #d8000c;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Inputs */
+.input-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  font-size: 25px;
+  color: #4a5568;
+  margin-bottom: 6px;
+}
+
+.input-group input {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 18px;
+  width: 100%;
+  background-color: #ffffff;
+  box-shadow: none; 
+}
+
+.input-group input::placeholder {
+  color: #a0aec0;
+}
+
+/* Botão */
+.login-form button[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  background-color: #34a853;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 8px;
+}
+
+.login-form button[type="submit"]:hover {
+  background-color: #2c8e46;
+}
+
+/* Link "Esqueceu a senha" */
+.recuperar-senha {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.recuperar-senha a {
+  font-size: 14px;
+  color: #34a853;
+  text-decoration: underline;
+  transition: color 0.3s;
+}
+
+.recuperar-senha a:hover {
+  color: #2c8e46;
+}
+
+/* Rodapé */
+footer {
+  margin-top: auto;
+  width: 100%;
+  background-color: #FFFFFF;
+  padding: 10px 0;
+  text-align: center;
+}
+
+footer p {
+  color: rgb(107 114 128 / var(--tw-text-opacity));
+  font-size: 18px;
+}

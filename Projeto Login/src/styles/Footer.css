@@ -2,17 +2,40 @@
 
 /* Rodapé */
 footer {
-    background-color: #28a745;
-    color: white;
-    text-align: center;
-    padding: 10px 0;
-    width: 100%;
-  }
-  
+  background-color: #ffffff; /* bg-white */
+  color: #6b7280; /* text-gray-500 */
+  text-align: center; /* text-center */
+  padding-top: 1rem; /* py-4 */
+  padding-bottom: 1rem; /* py-4 */
+  border-top: 1px solid #e5e7eb; /* border-t */
+  width: 100%; /* Ocupa toda a largura da tela */
+  box-sizing: border-box;
+}
+
+.footer-content {
+  max-width: 80rem; /* max-w-7xl */
+  margin-left: auto; /* mx-auto */
+  margin-right: auto; /* mx-auto */
+  padding-left: 1rem; /* px-4 */
+  padding-right: 1rem; /* px-4 */
+  padding: 10px 0; /* Mantém o padding existente */
+  background-color: transparent;
+  font-size: 0.875rem; /* text-sm */
+  line-height: 1.25rem; /* text-sm */
+}
+
+/* Responsividade para sm:px-6 (≥640px) */
+@media (min-width: 640px) {
   .footer-content {
-    background-color: transparent;
-    padding: 10px 0;
-    margin: 0;
-    width: 100%;
-    border-radius: 0;
+    padding-left: 1.5rem; /* sm:px-6 */
+    padding-right: 1.5rem; /* sm:px-6 */
   }
+}
+
+/* Responsividade para lg:px-8 (≥1024px) */
+@media (min-width: 1024px) {
+  .footer-content {
+    padding-left: 2rem; /* lg:px-8 */
+    padding-right: 2rem; /* lg:px-8 */
+  }
+}

@@ -40,38 +40,41 @@ const transporter = nodemailer.createTransport({
 const JWT_SECRET =
   "5fcd95ffcfad0327aafd77c2ff738d591f2a52b83d8672a120a06b57d7b4f8af13333f93ede5592878c2e3eb90ae2c92f78d08e2db0b80748e00a0c2f282e0f57f854972e6227424fe101b4301bfaac48f0673193bf36d5551a319ce1108b5bb0a2b6d1c304aeb94fe34b82f2e893575cacb731acde51952d4177a5c5192b055d02f35bef6bf834432eddc3f32fff6061c1a27fa8a6417ce3d44e02f9290dcd3bd8fcd899a9e437da66b00d4b009e3ef3e1b96840ab40ea302b703a1f85d5a5836bb8630606d2b5e23c9a408ddf5079bae563ddef41f7f7a743d3b7554d9982a18fe379cf431b3a3f38e6bb57b3cc62bb7b6bf271712d4389d6a030c1227531c";
 
-const executeQuery = (query, values, res, tipoOperacao = "") => {
-  db.query(query, values, (err, results) => {
-    if (err) {
-      console.error("Erro ao executar a consulta:", err);
-      return res.status(500).json({ error: "Erro ao executar a consulta", details: err.message });
-    }
-
-    if (tipoOperacao === "insert") {
-      const newId = results.insertId;
-      const selectQuery = `SELECT * FROM ${query.split(" ")[2]} WHERE id = ?`;
-      db.query(selectQuery, [newId], (err, newRecord) => {
-        if (err) {
-          console.error("Erro ao buscar o novo registro:", err);
-          return res.status(500).json({ error: "Erro ao buscar o novo registro", details: err.message });
+  const executeQuery = (query, values, res, tipoOperacao = "", tabela = "") => {
+    db.query(query, values, (err, results) => {
+      if (err) {
+        console.error("Erro ao executar a consulta:", err);
+        return res.status(500).json({ error: "Erro ao executar a consulta", details: err.message });
+      }
+  
+      if (tipoOperacao === "insert") {
+        const newId = results.insertId;
+        if (!tabela) {
+          return res.status(500).json({ error: "Tabela não fornecida para busca do novo registro" });
         }
-        res.status(201).json(newRecord[0]);
-      });
-    } else if (tipoOperacao === "update") {
-      if (results.affectedRows === 0) {
-        return res.status(404).json({ error: "Registro não encontrado" });
+        const selectQuery = `SELECT * FROM ${tabela} WHERE id = ?`;
+        db.query(selectQuery, [newId], (err, newRecord) => {
+          if (err) {
+            console.error("Erro ao buscar o novo registro:", err);
+            return res.status(500).json({ error: "Erro ao buscar o novo registro", details: err.message });
+          }
+          res.status(201).json(newRecord[0]);
+        });
+      } else if (tipoOperacao === "update") {
+        if (results.affectedRows === 0) {
+          return res.status(404).json({ error: "Registro não encontrado" });
+        }
+        return res.status(200).json({ message: "Registro atualizado com sucesso" });
+      } else if (tipoOperacao === "delete") {
+        if (results.affectedRows === 0) {
+          return res.status(404).json({ error: "Registro não encontrado para exclusão" });
+        }
+        return res.status(200).json({ message: "Registro excluído com sucesso" });
+      } else {
+        return res.json(results);
       }
-      return res.status(200).json({ message: "Registro atualizado com sucesso" });
-    } else if (tipoOperacao === "delete") {
-      if (results.affectedRows === 0) {
-        return res.status(404).json({ error: "Registro não encontrado para exclusão" });
-      }
-      return res.status(200).json({ message: "Registro excluído com sucesso" });
-    } else {
-      return res.json(results);
-    }
-  });
-};
+    });
+  };
 
 // Middleware de autenticação
 const autenticar = (req, res, next) => {
@@ -251,7 +254,14 @@ app.post("/doacoes/agendar", autenticar, autorizar(["admin", "gerente"]), (req, 
 
   const query =
     "INSERT INTO agendar_doacao (data_agendamento, doador_id, tipo_doacao, quantidade, descricao, responsavel_id, observacoes, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-  executeQuery(query, [data, doador, tipo_doacao, quantidade, descricao, responsavel, observacoes, status], res, "insert");
+
+  executeQuery(
+    query,
+    [data, doador, tipo_doacao, quantidade, descricao, responsavel, observacoes, status],
+    res,
+    "insert",
+    "agendar_doacao" // ✅ FALTAVA ISSO!
+  );
 });
 
 // Receber Doação (todos podem acessar)
@@ -505,6 +515,339 @@ app.get("/atividades/concluir", autenticar, autorizar(["admin", "gerente"]), (re
 
   executeQuery(query, values, res);
 });
+//-- Iniciar Projeto e Listar Projetos Iniciados --\\
+
+// Criar Projeto
+app.post("/projetos/iniciar", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const { nome_projeto, data_inicio, responsavel_id, descricao, status } = req.body;
+
+  if (!nome_projeto || !data_inicio || !responsavel_id || !status) {
+    return res.status(400).json({ error: "Campos obrigatórios: nome_projeto, data_inicio, responsavel_id, status" });
+  }
+
+  const query = `INSERT INTO iniciar_projeto (nome_projeto, data_inicio, responsavel_id, descricao, status) VALUES (?, ?, ?, ?, ?)`;
+
+  // ✅ Adicionamos o nome da tabela aqui no insert
+  executeQuery(query, [nome_projeto, data_inicio, responsavel_id, descricao, status], res, "insert", "iniciar_projeto");
+});
+
+// Listar Projetos
+app.get("/projetos/iniciar", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const { status } = req.query;
+  let query = "SELECT * FROM iniciar_projeto WHERE 1=1";
+  const values = [];
+
+  if (status) {
+    query += " AND status = ?";
+    values.push(status);
+  }
+
+  executeQuery(query, values, res); // 🔎 aqui não precisa do nome da tabela
+});
+
+// Atualizar Projeto
+app.put("/projetos/iniciar/:id", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const { id } = req.params;
+  const { nome_projeto, data_inicio, responsavel_id, descricao, status } = req.body;
+
+  const camposPermitidos = ["nome_projeto", "data_inicio", "responsavel_id", "descricao", "status"];
+  const dados = { nome_projeto, data_inicio, responsavel_id, descricao, status };
+  const camposFiltrados = Object.keys(dados).filter(campo => camposPermitidos.includes(campo) && dados[campo] !== undefined);
+
+  if (camposFiltrados.length === 0) {
+    return res.status(400).json({ error: "Nenhum campo válido fornecido para atualização" });
+  }
+
+  const setClause = camposFiltrados.map(campo => `${campo} = ?`).join(", ");
+  const valores = camposFiltrados.map(campo => dados[campo]);
+  valores.push(id);
+
+  const query = `UPDATE iniciar_projeto SET ${setClause} WHERE id = ?`;
+  executeQuery(query, valores, res, "update");
+});
+
+// Deletar Projeto
+app.delete("/projetos/iniciar/:id", autenticar, autorizar(["admin"]), (req, res) => {
+  const { id } = req.params;
+  const query = "DELETE FROM iniciar_projeto WHERE id = ?";
+  executeQuery(query, [id], res, "delete");
+});
+
+// ---------------- ROTAS DE CONCLUSÃO DE PROJETOS ----------------
+
+// Criar projeto concluído
+app.post("/projetos/concluir", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const { nome_projeto, data_inicio, data_conclusao, responsavel_id, descricao, status } = req.body;
+
+  if (!nome_projeto || !data_inicio || !data_conclusao || !responsavel_id || !status) {
+    return res.status(400).json({ error: "Campos obrigatórios: nome_projeto, data_inicio, data_conclusao, responsavel_id, status" });
+  }
+
+  const query = `
+    INSERT INTO concluir_projeto (nome_projeto, data_inicio, data_conclusao, responsavel_id, descricao, status)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+  executeQuery(query, [nome_projeto, data_inicio, data_conclusao, responsavel_id, descricao, status], res, "insert", "concluir_projeto");
+});
+
+// Listar projetos concluídos
+app.get("/projetos/concluir", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const { status } = req.query;
+  let query = "SELECT * FROM concluir_projeto WHERE 1=1";
+  const values = [];
+
+  if (status) {
+    query += " AND status = ?";
+    values.push(status);
+  }
+
+  executeQuery(query, values, res);
+});
+
+// Atualizar projeto concluído
+app.put("/projetos/concluir/:id", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const { id } = req.params;
+  const { nome_projeto, data_inicio, data_conclusao, responsavel_id, descricao, status } = req.body;
+
+  const camposPermitidos = ["nome_projeto", "data_inicio", "data_conclusao", "responsavel_id", "descricao", "status"];
+  const dados = { nome_projeto, data_inicio, data_conclusao, responsavel_id, descricao, status };
+  const camposFiltrados = Object.keys(dados).filter(campo => camposPermitidos.includes(campo) && dados[campo] !== undefined);
+
+  if (camposFiltrados.length === 0) {
+    return res.status(400).json({ error: "Nenhum campo válido fornecido para atualização" });
+  }
+
+  const setClause = camposFiltrados.map(campo => `${campo} = ?`).join(", ");
+  const valores = camposFiltrados.map(campo => dados[campo]);
+  valores.push(id);
+
+  const query = `UPDATE concluir_projeto SET ${setClause} WHERE id = ?`;
+  executeQuery(query, valores, res, "update");
+});
+
+// Deletar projeto concluído
+app.delete("/projetos/concluir/:id", autenticar, autorizar(["admin"]), (req, res) => {
+  const { id } = req.params;
+  const query = "DELETE FROM concluir_projeto WHERE id = ?";
+  executeQuery(query, [id], res, "delete");
+});
+
+// ---------------- ROTAS DE ESTOQUE ----------------
+
+app.post("/estoque", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const { item, quantidade, tipo, observacoes } = req.body;
+
+  if (!item || !quantidade || !tipo) {
+    return res.status(400).json({ error: "Campos obrigatórios: item, quantidade, tipo" });
+  }
+
+  const query = `
+    INSERT INTO estoque (item, quantidade, tipo, observacoes)
+    VALUES (?, ?, ?, ?)
+  `;
+  executeQuery(query, [item, quantidade, tipo, observacoes], res, "insert", "estoque");
+});
+
+app.get("/estoque", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const query = "SELECT * FROM estoque ORDER BY id DESC";
+  executeQuery(query, [], res);
+});
+
+app.put("/estoque/:id", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const { id } = req.params;
+  const { item, quantidade, tipo, observacoes } = req.body;
+
+  const campos = { item, quantidade, tipo, observacoes };
+  const camposValidos = Object.keys(campos).filter(c => campos[c] !== undefined);
+
+  if (camposValidos.length === 0) {
+    return res.status(400).json({ error: "Nenhum campo fornecido para atualização" });
+  }
+
+  const setClause = camposValidos.map(campo => `${campo} = ?`).join(", ");
+  const valores = camposValidos.map(campo => campos[campo]);
+  valores.push(id);
+
+  const query = `UPDATE estoque SET ${setClause} WHERE id = ?`;
+  executeQuery(query, valores, res, "update");
+});
+
+app.delete("/estoque/:id", autenticar, autorizar(["admin"]), (req, res) => {
+  const { id } = req.params;
+  const query = "DELETE FROM estoque WHERE id = ?";
+  executeQuery(query, [id], res, "delete");
+});
+
+// ---------------- FINAL ROTAS DE ESTOQUE ---------------- \\
+// ---------------- ROTAS DE CAIXA ----------------
+
+app.post("/caixa", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const { data, tipo, valor, descricao } = req.body;
+  if (!data || !tipo || !valor) {
+    return res.status(400).json({ error: "Campos obrigatórios: data, tipo, valor" });
+  }
+
+  const query = "INSERT INTO caixa (data, tipo, valor, descricao) VALUES (?, ?, ?, ?)";
+  executeQuery(query, [data, tipo, valor, descricao], res, "insert", "caixa");
+});
+
+app.get("/caixa", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const query = "SELECT * FROM caixa ORDER BY data DESC";
+  executeQuery(query, [], res);
+});
+
+app.put("/caixa/:id", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const { id } = req.params;
+  const { data, tipo, valor, descricao } = req.body;
+
+  const campos = { data, tipo, valor, descricao };
+  const camposValidos = Object.keys(campos).filter(c => campos[c] !== undefined);
+
+  if (camposValidos.length === 0) {
+    return res.status(400).json({ error: "Nenhum campo fornecido para atualização" });
+  }
+
+  const setClause = camposValidos.map(campo => `${campo} = ?`).join(", ");
+  const valores = camposValidos.map(campo => campos[campo]);
+  valores.push(id);
+
+  const query = `UPDATE caixa SET ${setClause} WHERE id = ?`;
+  executeQuery(query, valores, res, "update");
+});
+
+app.delete("/caixa/:id", autenticar, autorizar(["admin"]), (req, res) => {
+  const { id } = req.params;
+  const query = "DELETE FROM caixa WHERE id = ?";
+  executeQuery(query, [id], res, "delete");
+});
+// ---------------- FINAL ROTAS DE CAIXA ----------------
+
+// ---------------- ROTAS DE PEDIDOS ----------------
+
+app.post("/pedidos", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const { data, item, quantidade, solicitante, status, observacoes } = req.body;
+  if (!data || !item || !quantidade || !solicitante || !status) {
+    return res.status(400).json({ error: "Campos obrigatórios: data, item, quantidade, solicitante, status" });
+  }
+
+  const query = `
+    INSERT INTO pedidos (data, item, quantidade, solicitante, status, observacoes)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+  executeQuery(query, [data, item, quantidade, solicitante, status, observacoes], res, "insert", "pedidos");
+});
+
+app.get("/pedidos", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const query = "SELECT * FROM pedidos ORDER BY data DESC";
+  executeQuery(query, [], res);
+});
+
+app.put("/pedidos/:id", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const { id } = req.params;
+  const { data, item, quantidade, solicitante, status, observacoes } = req.body;
+
+  const campos = { data, item, quantidade, solicitante, status, observacoes };
+  const camposValidos = Object.keys(campos).filter(c => campos[c] !== undefined);
+
+  if (camposValidos.length === 0) {
+    return res.status(400).json({ error: "Nenhum campo fornecido para atualização" });
+  }
+
+  const setClause = camposValidos.map(campo => `${campo} = ?`).join(", ");
+  const valores = camposValidos.map(campo => campos[campo]);
+  valores.push(id);
+
+  const query = `UPDATE pedidos SET ${setClause} WHERE id = ?`;
+  executeQuery(query, valores, res, "update");
+});
+
+app.delete("/pedidos/:id", autenticar, autorizar(["admin"]), (req, res) => {
+  const { id } = req.params;
+  const query = "DELETE FROM pedidos WHERE id = ?";
+  executeQuery(query, [id], res, "delete");
+});
+
+// ---------------- FINAL ROTAS DE PEDIDOS ----------------
+// ---------------- ROTAS DE DESPESAS ----------------
+
+app.post("/despesas", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const { data, categoria, valor, descricao } = req.body;
+  if (!data || !categoria || !valor) {
+    return res.status(400).json({ error: "Campos obrigatórios: data, categoria, valor" });
+  }
+
+  const query = `
+    INSERT INTO despesas (data, categoria, valor, descricao)
+    VALUES (?, ?, ?, ?)
+  `;
+  executeQuery(query, [data, categoria, valor, descricao], res, "insert", "despesas");
+});
+
+app.get("/despesas", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const query = "SELECT * FROM despesas ORDER BY data DESC";
+  executeQuery(query, [], res);
+});
+
+app.put("/despesas/:id", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const { id } = req.params;
+  const { data, categoria, valor, descricao } = req.body;
+
+  const campos = { data, categoria, valor, descricao };
+  const camposValidos = Object.keys(campos).filter(c => campos[c] !== undefined);
+
+  if (camposValidos.length === 0) {
+    return res.status(400).json({ error: "Nenhum campo fornecido para atualização" });
+  }
+
+  const setClause = camposValidos.map(campo => `${campo} = ?`).join(", ");
+  const valores = camposValidos.map(campo => campos[campo]);
+  valores.push(id);
+
+  const query = `UPDATE despesas SET ${setClause} WHERE id = ?`;
+  executeQuery(query, valores, res, "update");
+});
+
+app.delete("/despesas/:id", autenticar, autorizar(["admin"]), (req, res) => {
+  const { id } = req.params;
+  const query = "DELETE FROM despesas WHERE id = ?";
+  executeQuery(query, [id], res, "delete");
+});
+
+// ---------------- FINAL ROTAS DE DESPESAS ----------------
+
+// ----------------  ROTAS DASHBORD ----------------
+
+app.get("/dashboard", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
+  const queries = {
+    agendar_doacao: "SELECT COUNT(*) AS total FROM agendar_doacao",
+    receber_doacao: "SELECT COUNT(*) AS total FROM receber_doacao",
+    pedidos: "SELECT COUNT(*) AS total FROM pedidos",
+    pedidos_pendentes: "SELECT COUNT(*) AS total FROM pedidos WHERE status = 'Pendente'",
+    estoque: "SELECT COUNT(*) AS total FROM estoque",
+    iniciar_projeto: "SELECT COUNT(*) AS total FROM iniciar_projeto",
+    concluir_projeto: "SELECT COUNT(*) AS total FROM concluir_projeto",
+    iniciar_atividade: "SELECT COUNT(*) AS total FROM iniciar_atividade",
+    concluir_atividade: "SELECT COUNT(*) AS total FROM concluir_atividade",
+    despesas: "SELECT COUNT(*) AS total FROM despesas",
+    caixa: "SELECT COUNT(*) AS total FROM caixa"
+  };
+
+  const result = {};
+  let completed = 0;
+  const totalQueries = Object.keys(queries).length;
+
+  for (const [key, sql] of Object.entries(queries)) {
+    db.query(sql, (err, rows) => {
+      if (err) return res.status(500).json({ error: `Erro ao buscar ${key}` });
+      result[key] = rows[0].total;
+      completed++;
+      if (completed === totalQueries) {
+        res.json(result);
+      }
+    });
+  }
+});
+
 // Rota para listar voluntários (apenas admin e gerente)
 app.get("/voluntarios", autenticar, autorizar(["admin", "gerente"]), (req, res) => {
   const query = "SELECT id, nome, email, nivel_acesso FROM usuarios WHERE nivel_acesso = 'voluntario'";

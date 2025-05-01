@@ -4,6 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import Header from "../components/Header";
 import Menu from "../components/Menu";
 import Footer from "../components/Footer";
+import toast, { Toaster } from "react-hot-toast"; // 🔥 Toast importado
 import "../styles/LoginPage.css";
 
 function AgendarDoacao() {
@@ -23,10 +24,16 @@ function AgendarDoacao() {
   const [editando, setEditando] = useState(null);
   const [error, setError] = useState("");
 
+  const { usuario, logout } = useContext(AuthContext);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
   const fetchData = async () => {
     try {
-      console.log("Token enviado:", token); // Log para verificar o token
-      const response = await fetch("/doacoes/agendar", { // Usando proxy
+      const response = await fetch("http://localhost:5000/doacoes/agendar", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -36,17 +43,15 @@ function AgendarDoacao() {
 
       if (!response.ok) {
         const errData = await response.text();
-        console.error("Resposta do servidor:", errData);
         try {
           const jsonErr = JSON.parse(errData);
-          throw new Error(jsonErr.error || `Erro ${response.status}: ${response.statusText}`);
-        } catch (e) {
-          throw new Error(`Erro ${response.status}: Resposta não é JSON válida - ${errData}`);
+          throw new Error(jsonErr.error || `Erro ${response.status}`);
+        } catch {
+          throw new Error(`Erro ${response.status}: ${errData}`);
         }
       }
 
       const data = await response.json();
-      console.log("Dados recebidos:", data); // Log para verificar os dados
       setAgendadas(data);
       setError("");
     } catch (error) {
@@ -103,7 +108,7 @@ function AgendarDoacao() {
         throw new Error(errData.error || "Erro ao enviar os dados");
       }
 
-      alert(editando ? "Atualizado com sucesso!" : "Cadastrado com sucesso!");
+      toast.success(editando ? "Atualizado com sucesso!" : "Cadastrado com sucesso!"); // ✅ TOAST
       setEditando(null);
       setFormData({
         data: "",
@@ -119,7 +124,7 @@ function AgendarDoacao() {
     } catch (error) {
       setError(error.message);
       console.error("Erro ao enviar o formulário:", error);
-      alert("Erro ao enviar os dados!");
+      toast.error("Erro ao enviar os dados!"); // ✅ TOAST
     }
   };
 
@@ -137,11 +142,11 @@ function AgendarDoacao() {
         throw new Error(errData.error || "Erro ao excluir o registro");
       }
       setAgendadas((prev) => prev.filter((item) => item.id !== id));
-      alert("Registro excluído com sucesso!");
+      toast.success("Registro excluído com sucesso!"); 
     } catch (error) {
       setError(error.message);
       console.error("Erro ao excluir registro:", error);
-      alert("Erro ao excluir o registro!");
+      toast.error("Erro ao excluir o registro!"); 
     }
   };
 
@@ -161,17 +166,18 @@ function AgendarDoacao() {
 
   return (
     <div className="page-container">
-      <Header />
-      <Menu />
+      <Header usuario={usuario} onLogout={handleLogout} />
+      <Menu onLogout={handleLogout} />
       <div className="container">
+        <Toaster position="top-center" />
         <h1>Agendar Doação</h1>
         {error && <p className="erro">{error}</p>}
 
         <form onSubmit={enviarFormulario}>
           <input
-            type="number"
+            type="text"
             name="doador"
-            placeholder="ID do Doador"
+            placeholder="Nome Doador"
             value={formData.doador}
             onChange={handleInputChange}
             required
@@ -207,9 +213,9 @@ function AgendarDoacao() {
             onChange={handleInputChange}
           />
           <input
-            type="number"
+            type="text"
             name="responsavel"
-            placeholder="ID do Responsável"
+            placeholder="Responsável Coleta"
             value={formData.responsavel}
             onChange={handleInputChange}
             required
@@ -235,9 +241,8 @@ function AgendarDoacao() {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Data</th>
                 <th>Doador</th>
+                <th>Data</th>
                 <th>Tipo</th>
                 <th>Quantidade</th>
                 <th>Descrição</th>
@@ -250,7 +255,7 @@ function AgendarDoacao() {
             <tbody>
               {agendadas.map((doacao) => (
                 <tr key={doacao.id}>
-                  <td>{doacao.id}</td>
+                  <td>{doacao.doador_id}</td>
                   <td>{new Date(doacao.data_agendamento).toLocaleString("pt-BR", {
                     day: "2-digit",
                     month: "2-digit",
@@ -259,7 +264,6 @@ function AgendarDoacao() {
                     minute: "2-digit",
                     second: "2-digit"
                   })}</td>
-                  <td>{doacao.doador_id}</td>
                   <td>{doacao.tipo_doacao}</td>
                   <td>{doacao.quantidade}</td>
                   <td>{doacao.descricao || "-"}</td>
@@ -270,10 +274,7 @@ function AgendarDoacao() {
                     <button className="editar" onClick={() => handleEdit(doacao)}>
                       Editar
                     </button>
-                    <button
-                      className="deletar"
-                      onClick={() => handleDelete(doacao.id)}
-                    >
+                    <button className="deletar" onClick={() => handleDelete(doacao.id)}>
                       Excluir
                     </button>
                   </td>
@@ -285,7 +286,7 @@ function AgendarDoacao() {
           <p>Nenhuma doação agendada encontrada.</p>
         )}
       </div>
-      <Footer /> {/* Adicione o Footer */}
+      <Footer />
     </div>
   );
 }

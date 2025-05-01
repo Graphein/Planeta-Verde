@@ -4,8 +4,8 @@ import { AuthContext } from "../context/AuthContext";
 import Header from "../components/Header";
 import Menu from "../components/Menu";
 import Footer from "../components/Footer";
+import toast, { Toaster } from "react-hot-toast"; // 🔥 Importando Toast
 import "../styles/LoginPage.css";
-
 
 function IniciarAtividade() {
   const { token } = useContext(AuthContext);
@@ -98,7 +98,7 @@ function IniciarAtividade() {
         throw new Error(errData.error || "Erro ao enviar os dados");
       }
 
-      alert(editando ? "Atualizado com sucesso!" : "Cadastrado com sucesso!");
+      toast.success(editando ? "Atualizado com sucesso!" : "Cadastrado com sucesso!"); // ✅ TOAST
       setEditando(null);
       setFormData({
         data: "",
@@ -112,7 +112,7 @@ function IniciarAtividade() {
     } catch (error) {
       setError(error.message);
       console.error("Erro ao enviar o formulário:", error);
-      alert("Erro ao enviar os dados!");
+      toast.error("Erro ao enviar os dados!"); // ✅ TOAST
     }
   };
 
@@ -130,11 +130,11 @@ function IniciarAtividade() {
         throw new Error(errData.error || "Erro ao excluir o registro");
       }
       setIniciadas((prev) => prev.filter((item) => item.id !== id));
-      alert("Registro excluído com sucesso!");
+      toast.success("Registro excluído com sucesso!"); // ✅ TOAST
     } catch (error) {
       setError(error.message);
       console.error("Erro ao excluir registro:", error);
-      alert("Erro ao excluir o registro!");
+      toast.error("Erro ao excluir o registro!"); // ✅ TOAST
     }
   };
 
@@ -148,13 +148,22 @@ function IniciarAtividade() {
       voluntarios: registro.voluntarios || "",
       status: registro.status,
     });
+    toast.info("Edição iniciada!"); // ✅ TOAST
+  };
+
+  const { usuario, logout } = useContext(AuthContext);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
   };
 
   return (
     <div className="page-container">
-      <Header />
-      <Menu />
+      <Header usuario={usuario} onLogout={handleLogout} />
+      <Menu onLogout={handleLogout} />
       <div className="container">
+        <Toaster position="top-center" /> {/* Configurando Toast */}
         <h1>Iniciar Atividade</h1>
         {error && <p className="erro">{error}</p>}
 
@@ -167,17 +176,17 @@ function IniciarAtividade() {
             required
           />
           <input
-            type="number"
+            type="text"
             name="atividade"
-            placeholder="ID da Atividade"
+            placeholder="Atividade"
             value={formData.atividade}
             onChange={handleInputChange}
             required
           />
           <input
-            type="number"
+            type="text"
             name="responsavel"
-            placeholder="ID do Responsável"
+            placeholder="Responsável"
             value={formData.responsavel}
             onChange={handleInputChange}
             required
@@ -210,7 +219,6 @@ function IniciarAtividade() {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Data</th>
                 <th>Atividade</th>
                 <th>Responsável</th>
@@ -223,7 +231,6 @@ function IniciarAtividade() {
             <tbody>
               {iniciadas.map((atividade) => (
                 <tr key={atividade.id}>
-                  <td>{atividade.id}</td>
                   <td>{new Date(atividade.data_inicio).toLocaleString("pt-BR", {
                     day: "2-digit",
                     month: "2-digit",
@@ -241,10 +248,7 @@ function IniciarAtividade() {
                     <button className="editar" onClick={() => handleEdit(atividade)}>
                       Editar
                     </button>
-                    <button
-                      className="deletar"
-                      onClick={() => handleDelete(atividade.id)}
-                    >
+                    <button className="deletar" onClick={() => handleDelete(atividade.id)}>
                       Excluir
                     </button>
                   </td>
@@ -256,7 +260,7 @@ function IniciarAtividade() {
           <p>Nenhuma atividade iniciada encontrada.</p>
         )}
       </div>
-      <Footer /> {/* Adicione o Footer */}
+      <Footer /> 
     </div>
   );
 }
