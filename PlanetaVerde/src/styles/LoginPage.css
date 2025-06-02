@@ -1,0 +1,253 @@
+/* LoginPage.css */
+
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f9;
+  color: #333;
+}
+
+/* Container para a página inteira */
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Container principal */
+.container {
+  flex: 1; /* Faz o container crescer para empurrar o footer para baixo */
+  width: 90%;
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+h1 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+h2 {
+  text-align: center;
+  font-size: 1.5rem;
+  margin: 30px 0 20px;
+  color: #212529;
+}
+
+/* Botões de Toggle */
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+button {
+  background-color: #343A40;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #d81717;
+}
+
+/* Formulário */
+form {
+  width: 100%;
+  max-width: 500px; /* Ajustado para acomodar mais campos */
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Aumentado para melhor espaçamento */
+}
+
+input[type="text"],
+input[type="number"],
+input[type="datetime-local"],
+input[type="email"],
+input[type="password"],
+select {
+  width: 100%;
+  padding: 10px;
+  margin: 0; /* Removido para consistência com gap */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+input:focus,
+select:focus {
+  border-color: #45a049;
+}
+
+select[name="status"] {
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+select[name="status"] option {
+  padding: 8px;
+  background-color: #fff;
+  color: #333;
+}
+
+button[type="submit"] {
+  width: 100%;
+  background-color: #212529;
+  padding: 12px;
+}
+
+button[type="submit"]:hover {
+  background-color: #45a049;
+}
+
+/* Tabela */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th,
+td {
+  padding: 12px;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+button.deletar {
+  background-color: #DC3545;
+  color: white;
+  padding: 10px 17px;
+  border: none;
+  border-radius: 5px;
+  margin: 2px;
+  cursor: pointer;
+}
+
+button.deletar:hover {
+  background-color: #c82333;
+}
+
+.erro {
+  color: red;
+  font-size: 14px;
+  margin: 10px 0;
+  text-align: center;
+}
+/* Estilo para o link de recuperar senha */
+.recuperar-senha {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.recuperar-senha a {
+  color: #212529;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.3s ease;
+}
+
+.recuperar-senha a:hover {
+  color: #218838; /* Verde mais escuro no hover */
+  text-decoration: underline;
+}
+.mensagem {
+  color: #28a745; /* Verde do tema */
+  font-size: 14px;
+  margin: 10px 0;
+  text-align: center;
+}
+.form-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 24px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px; /* letra menor */
+  background-color: #fff;
+}
+
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.form-row h3 {
+  width: 40%;
+  font-size: 14px;
+  margin: 0;
+}
+
+.form-row input,
+.form-row select {
+  width: 58%;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button[type="submit"] {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  background-color: #222;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+/* Responsividade */
+@media (max-width: 768px) {
+  .container {
+    width: 95%;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  button {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  form {
+    max-width: 100%;
+  }
+}

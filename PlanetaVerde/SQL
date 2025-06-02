@@ -1,0 +1,50 @@
+CREATE TABLE iniciar_projeto (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome_projeto VARCHAR(100) NOT NULL,
+  data_inicio DATETIME NOT NULL,
+  responsavel_id VARCHAR(100) NOT NULL,
+  descricao TEXT,
+  status VARCHAR(50) NOT NULL
+);
+CREATE TABLE concluir_projeto (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome_projeto VARCHAR(100) NOT NULL,
+  data_inicio DATETIME NOT NULL,
+  data_conclusao DATETIME NOT NULL,
+  responsavel_id VARCHAR(100) NOT NULL,
+  descricao TEXT,
+  status VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE estoque (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  item VARCHAR(100) NOT NULL,
+  quantidade INT NOT NULL,
+  tipo ENUM('entrada', 'saida') NOT NULL,
+  observacoes TEXT
+);
+CREATE TABLE pedidos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  data DATETIME NOT NULL,
+  item VARCHAR(100) NOT NULL,
+  quantidade INT NOT NULL,
+  solicitante VARCHAR(100) NOT NULL,
+  status ENUM('Pendente', 'Aprovado', 'Rejeitado') NOT NULL,
+  observacoes TEXT
+);
+CREATE TABLE pedidos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  data DATETIME NOT NULL,
+  item VARCHAR(100) NOT NULL,
+  quantidade INT NOT NULL,
+  solicitante VARCHAR(100) NOT NULL,
+  status VARCHAR(50) NOT NULL,
+  observacoes TEXT
+);
+CREATE TABLE despesas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  data DATETIME NOT NULL,
+  categoria VARCHAR(100) NOT NULL,
+  valor DECIMAL(10,2) NOT NULL,
+  descricao TEXT
+);

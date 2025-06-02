@@ -1,0 +1,57 @@
+/* Header.css */
+
+/* Cabeçalho */
+header {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end; /* Alinha o conteúdo (usuario-info) à direita */
+  align-items: center; /* Centraliza verticalmente */
+  padding: 20px;
+  background-color: #16A34A; /* Verde Planeta Verde */
+  color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 0;
+  width: 100%; /* Garante que o header ocupe toda a largura */
+  box-sizing: border-box;
+}
+
+.usuario-info {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Espaço entre o texto e o botão */
+}
+
+.usuario-info span {
+  font-size: 20px;
+}
+
+.botao-sair {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Espaço entre o ícone e o texto */
+  padding: 8px 16px;
+  background-color: #EAB308; /* Cor de fundo */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.botao-sair:hover {
+  background-color: #EAB308; /* Cor ao passar o mouse */
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  header {
+    padding: 15px;
+    justify-content: flex-end; /* Mantém o alinhamento à direita em telas menores */
+  }
+
+  .usuario-info {
+    flex-direction: row; /* Mantém texto e botão em linha */
+    gap: 5px;
+    width: 100%; /* Ocupa toda a largura para alinhamento à direita */
+    justify-content: flex-end; /* Garante alinhamento à direita */
+  }
+}

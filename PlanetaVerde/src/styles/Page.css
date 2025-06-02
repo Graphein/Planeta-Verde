@@ -1,0 +1,113 @@
+/* container Principal */
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f7f8fc;
+  align-items: center;
+  justify-content: flex-start;
+}
+/* Cabeçalho */
+header img {
+  width:  200px;
+  margin: 32px auto 0;
+  display: block;
+}
+/* Formulário */
+
+.login-form{
+ background-color:#ffffff;
+ margin-top: 24px; 
+ padding: 24px;
+ border-radius: 12px;
+ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+ width: 100%;
+ max-width: 400px;
+ border: none;
+}
+
+/* Título */
+
+.BemVindo {
+
+  text-align: center;
+  font-size: 22px;
+  color: #2d3748;
+  margin-bottom: 16px;
+
+}
+/* mensagem de erro */
+.erro {
+
+  background-color: #ffe0e0;
+  color: #d8000c;
+  padding: 10px;
+  border-radius: 8px;
+  margin: 16px 0;
+  text-align: center;
+  font-size: 14px;
+}
+/* Inputs */
+.input-group label {
+  font-size: 15px;
+  color: #4a5568;
+  margin-bottom: 4px;
+
+}
+.input-group input {
+  padding: 10px;
+  border:  1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 15px;
+  background-color: #ffffff;
+}
+.input-group ::placeholder{
+  color: #a0aec0;
+  font-size: 14px;
+}
+
+/* Botão */
+.login-form button [ type = "submit"]{
+  width: 100%;
+  padding: 10px;
+  background-color: #34a853;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 4px;
+
+}
+.login-form button[type="submit"]:hover {
+  background-color: #2c8e46;
+}
+/* Link "Esqueceu a senha" */
+.recuperar-senha{
+  margin-top: 12px;
+  text-align: center;
+}
+.recuperar-senha a {
+  font-size: 13px;
+  color: #34a853;
+  text-decoration: underline;
+}
+.recuperar-senha a:hover{
+  color: #2c8e46;
+}
+/* rodapé */
+
+footer {
+  margin-top: auto;
+  width: 100%;
+  background-color: #ffffff;
+  padding: 8px 0;
+  text-align: center;
+}
+footer p {
+  color: #6b7280;
+  font-size: 13px;
+}
